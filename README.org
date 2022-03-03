@@ -1,0 +1,12 @@
+* org-import-simplenote
+
+Import Simplenote archives into Org.
+
+1. Go to Simplenote → Settings → Tools → Export Notes
+2. A =notes.zip= should be downloaded
+3. In an Org buffer, run =org-import-simplenote= and select the zip file
+4. Each Simplenote item will be imported as an Org heading (might be customizable in the future)
+
+** License
+
+GPLv3. See [[./LICENSE][LICENSE]].
