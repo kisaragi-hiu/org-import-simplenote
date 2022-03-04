@@ -49,7 +49,8 @@ This assumes we're in `org-mode'."
              (format-time-string "%FT%T%z"))))
       (insert "\n* " date-in-current-timezone)
       ;; just run this as we're still on the heading
-      (org-set-tags (cl-coerce .tags 'list))
+      (when (> (length .tags) 0)
+        (org-set-tags (cl-coerce .tags 'list)))
       (org-set-property "created" date-in-current-timezone)
       ;; Make sure we don't insert before the property drawer
       (goto-char (point-max))
