@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'parse-time)
+(require 'let-alist)
 
 (require 'org)
 
