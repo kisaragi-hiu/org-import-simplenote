@@ -76,6 +76,8 @@ This assumes we're in `org-mode'."
       (org-set-property "created" date-in-current-timezone)
       ;; Make sure we don't insert before the property drawer
       (goto-char (point-max))
+      (unless (eq ?\C-j (char-before (point-max)))
+        (insert "\n"))
       (insert "\n"
               ;; Simplenote entries seem to be stored with CRLF.
               ;; Delete the CR characters.
