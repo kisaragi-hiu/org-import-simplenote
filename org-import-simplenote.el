@@ -2,7 +2,7 @@
 
 ;; Author: Kisaragi Hiu
 ;; Version: 0.1
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "24.3") (let-alist "1.0.6"))
 ;; Homepage: https://github.com/kisaragi-hiu/org-import-simplenote
 
 ;; This file is not part of GNU Emacs
