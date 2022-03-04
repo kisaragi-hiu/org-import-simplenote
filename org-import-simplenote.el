@@ -31,9 +31,28 @@
 (require 'org)
 
 (defun org-import-simplenote--normalize-timestamp (timestamp)
-  "Normalize TIMESTAMP to the current timezone and remove subsecond precision."
-  (format-time-string "%FT%T%z"
-                      (parse-iso8601-time-string timestamp)))
+  "Normalize TIMESTAMP to the current timezone and remove subsecond precision.
+
+In Emacs < 26, only remove subsecond precision."
+  ;; We do this because parsing it and writing it out again does not
+  ;; normalize the timezone correctly in Emacs < 26.
+  ;;
+  ;; In Emacs >= 26, assuming the current system offset is +0800, this
+  ;;   (format-time-string "%FT%T%z"
+  ;;                       (parse-iso8601-time-string
+  ;;                        "2021-10-25T14:30:51+0900"))
+  ;; returns this:
+  ;;   "2021-10-25T13:30:51+0800"
+  ;; But in Emacs < 26 it returns this:
+  ;;   "2021-10-25T14:30:51+0800"
+  (if (version< emacs-version "26")
+      (replace-regexp-in-string
+       "Z$" "+0000"
+       (replace-regexp-in-string
+        "\\.[[:digit:]]\\{3\\}" ""
+        timestamp))
+    (format-time-string "%FT%T%z"
+                        (parse-iso8601-time-string timestamp))))
 
 ;; Returning a string to be inserted in the main function would be
 ;; cleaner. However, we have to rely on `org-set-tags' and

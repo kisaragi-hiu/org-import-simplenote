@@ -29,7 +29,7 @@ normalized version of TIMESTAMP."
        (lastModified . "2021-10-30T11:18:14.594Z")))
     (should (equal (buffer-substring-no-properties (point-min) (point-max))
                    (test--normalized-timestamp
-                    "2021-10-25T14:30:51+0900"
+                    "2021-10-25T05:30:51+0000"
                     "
 * %s
   :PROPERTIES:
