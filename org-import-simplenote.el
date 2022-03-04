@@ -26,10 +26,14 @@
 
 ;;; Code:
 
-(require 'subr-x)
 (require 'parse-time)
 
 (require 'org)
+
+(defun org-import-simplenote--normalize-timestamp (timestamp)
+  "Normalize TIMESTAMP to the current timezone and remove subsecond precision."
+  (format-time-string "%FT%T%z"
+                      (parse-iso8601-time-string timestamp)))
 
 ;; Returning a string to be inserted in the main function would be
 ;; cleaner. However, we have to rely on `org-set-tags' and
@@ -44,9 +48,7 @@ This assumes we're in `org-mode'."
     (let ((date-in-current-timezone
            ;; This loses the subsecond portion, but I don't
            ;; really care.
-           (thread-last .creationDate
-             parse-iso8601-time-string
-             (format-time-string "%FT%T%z"))))
+           (org-import-simplenote--normalize-timestamp .creationDate)))
       (insert "\n* " date-in-current-timezone)
       ;; just run this as we're still on the heading
       (when (> (length .tags) 0)
