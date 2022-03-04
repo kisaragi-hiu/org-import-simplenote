@@ -1,0 +1,29 @@
+name: "CI"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        emacs_version:
+          - 24.3
+          - 25.3
+          - 26.3
+          - 27.2
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
+      - uses: cask/setup-cask@master
+      - name: Install packages
+        run: cask install
+      - name: Run tests
+        run: cask exec ert-runner

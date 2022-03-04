@@ -1,7 +1,6 @@
 ;;; org-import-simplenote.el --- Import Simplenote notes into Org -*- lexical-binding: t -*-
 
 ;; Author: Kisaragi Hiu
-;; Maintainer: 如月飛羽
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "24.3"))
 ;; Homepage: https://github.com/kisaragi-hiu/org-import-simplenote
@@ -32,6 +31,34 @@
 
 (require 'org)
 
+;; Returning a string to be inserted in the main function would be
+;; cleaner. However, we have to rely on `org-set-tags' and
+;; `org-set-property', and it is unnecessarily expensive to create a
+;; new temporary buffer, switch to org mode, insert our text, then
+;; return the string *for every single note*.
+(defun org-import-simplenote--insert-note (note)
+  "Convert NOTE into Org text then insert it.
+
+This assumes we're in `org-mode'."
+  (let-alist note
+    (let ((date-in-current-timezone
+           ;; This loses the subsecond portion, but I don't
+           ;; really care.
+           (thread-last .creationDate
+             parse-iso8601-time-string
+             (format-time-string "%FT%T%z"))))
+      (insert "\n* " date-in-current-timezone)
+      ;; just run this as we're still on the heading
+      (org-set-tags (cl-coerce .tags 'list))
+      (org-set-property "created" date-in-current-timezone)
+      ;; Make sure we don't insert before the property drawer
+      (goto-char (point-max))
+      (insert "\n"
+              ;; Simplenote entries seem to be stored with CRLF.
+              ;; Delete the CR characters.
+              (replace-regexp-in-string (regexp-quote "") ""
+                                        .content)))))
+
 ;;;###autoload
 (defun org-import-simplenote (archive)
   "Convert Simplenote ARCHIVE to Org headings.
@@ -51,7 +78,10 @@ the end the current buffer."
   (save-excursion
     (let ((parsed-json (if (string= (file-name-extension archive) "zip")
                            (let* ((tmp-dir (file-name-as-directory
-                                            (expand-file-name (format "emacs%s" (random 10000)) temporary-file-directory))))
+                                            (expand-file-name
+                                             (format "emacs%s"
+                                                     (random 10000))
+                                             temporary-file-directory))))
                              (unwind-protect
                                  (progn
                                    (make-directory tmp-dir :parents)
@@ -65,24 +95,7 @@ the end the current buffer."
       (let-alist parsed-json
         (goto-char (point-max))
         (cl-loop for note being the elements of .activeNotes
-                 do (let-alist note
-                      (let ((date-in-current-timezone
-                             ;; This loses the subsecond portion, but I don't
-                             ;; really care.
-                             (thread-last .creationDate
-                               parse-iso8601-time-string
-                               (format-time-string "%FT%T%z"))))
-                        (insert "\n* " date-in-current-timezone)
-                        ;; just run this as we're still on the heading
-                        (org-set-tags (cl-coerce .tags 'list))
-                        (org-set-property "created" date-in-current-timezone)
-                        ;; Make sure we don't insert before the property drawer
-                        (goto-char (point-max))
-                        (insert "\n"
-                                ;; Simplenote entries seem to be stored with CRLF.
-                                ;; Delete the CR characters.
-                                (replace-regexp-in-string (regexp-quote "") ""
-                                                          .content)))))
+                 do (org-import-simplenote--insert-note note))
         (insert "\n")))))
 
 (provide 'org-import-simplenote)
