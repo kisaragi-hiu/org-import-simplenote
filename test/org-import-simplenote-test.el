@@ -18,9 +18,9 @@
                     "2021-10-25T14:30:51+0900"
                     "
 * %1$s
-:PROPERTIES:
-:created:  %1$s
-:END:
+  :PROPERTIES:
+  :created:  %1$s
+  :END:
 
 test")))))
 
