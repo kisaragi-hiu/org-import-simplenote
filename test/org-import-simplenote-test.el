@@ -1,5 +1,6 @@
 (require 'ert)
 (require 'org-import-simplenote)
+
 (ert-deftest org-import-simplenote--insert-note ()
   (with-temp-buffer
     (org-mode)
@@ -17,7 +18,7 @@
 
 test"))))
 
-(provide 'test-org-import-simplenote)
+(provide 'org-import-simplenote-test)
 
 ;; Local Variables:
 ;; flycheck-disabled-checkers: (emacs-lisp-checkdoc)
