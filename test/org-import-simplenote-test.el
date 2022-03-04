@@ -1,9 +1,23 @@
 (require 'ert)
 (require 'org-import-simplenote)
 
-(defun test--normalized-timestamp (timestamp format)
-  "Normalize TIMESTAMP and format it with FORMAT."
-  (format format (org-import-simplenote--normalize-timestamp timestamp)))
+(defmacro test--normalized-timestamp (timestamp format)
+  "Normalize TIMESTAMP and format it with FORMAT.
+
+Every single instance of %s in FORMAT will be replaced by the
+normalized version of TIMESTAMP."
+  (let ((count
+         ;; This is basically a copy of `s-count-matches'.
+         ;;
+         ;; We need this because "%1$s" was only added in Emacs 26,
+         ;; and I'm trying to maintain support back to Emacs 24.
+         (save-match-data
+           (with-temp-buffer
+             (insert format)
+             (goto-char (point-min))
+             (count-matches "%s" (point-min) (point-max)))))
+        (normalized (org-import-simplenote--normalize-timestamp timestamp)))
+    `(format ,format ,@(make-list count normalized))))
 
 (ert-deftest org-import-simplenote--insert-note ()
   (with-temp-buffer
@@ -17,9 +31,9 @@
                    (test--normalized-timestamp
                     "2021-10-25T14:30:51+0900"
                     "
-* %1$s
+* %s
   :PROPERTIES:
-  :created:  %1$s
+  :created:  %s
   :END:
 
 test")))))
