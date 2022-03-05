@@ -1,6 +1,15 @@
 (require 'ert)
 (require 'org-import-simplenote)
 
+(defun test--remove-leading-spaces (str)
+  "Remove leading spaces from STR."
+  (save-match-data
+    (with-temp-buffer
+      (insert str)
+      (while (re-search-backward (rx bol (+? " ") ":") nil t)
+        (replace-match ""))
+      (buffer-string))))
+
 (defmacro test--normalized-timestamp (timestamp format)
   "Normalize TIMESTAMP and format it with FORMAT.
 
@@ -27,14 +36,15 @@ normalized version of TIMESTAMP."
        (content . "test")
        (creationDate . "2021-10-25T05:30:51.000Z")
        (lastModified . "2021-10-30T11:18:14.594Z")))
-    (should (equal (buffer-substring-no-properties (point-min) (point-max))
+    (should (equal (test--remove-leading-spaces
+                    (buffer-substring-no-properties (point-min) (point-max)))
                    (test--normalized-timestamp
                     "2021-10-25T05:30:51+0000"
                     "
 * %s
-  :PROPERTIES:
-  :created:  %s
-  :END:
+:PROPERTIES:
+:created:  %s
+:END:
 
 test")))))
 
