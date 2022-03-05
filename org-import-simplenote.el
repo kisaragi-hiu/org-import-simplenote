@@ -31,6 +31,25 @@
 
 (require 'org)
 
+(defgroup org-import-simplenote nil
+  "Import Simplenote archives into Org."
+  :group 'org
+  :prefix "org-import-simplenote-")
+
+
+(defcustom org-import-simplenote-title-format 'timestamp
+  "What the imported title of each note should be.
+
+- `timestamp': the creation timestamp
+- `first-line': the first line of the note
+- `both': creation timestamp followed by the first line
+- Any function: the function will receive the parsed note data"
+  :group 'org-import-simplenote
+  :type '(choice (const timestamp)
+                 (const first-line)
+                 (const both)
+                 (function)))
+
 (defun org-import-simplenote--normalize-timestamp (timestamp)
   "Normalize TIMESTAMP to the current timezone and remove subsecond precision.
 
@@ -55,6 +74,22 @@ In Emacs < 26, only remove subsecond precision."
     (format-time-string "%FT%T%z"
                         (parse-iso8601-time-string timestamp))))
 
+(defun org-import-simplenote--format-title (note)
+  "Return a formatted title for NOTE.
+
+This assumes NOTE's timestamp is already normalized."
+  (let-alist note
+    (cl-case org-import-simplenote-title-format
+      (timestamp .creationDate)
+      (first-line
+       (substring .content 0 (cl-position ?\C-j .content)))
+      (both
+       (concat .creationDate
+               " "
+               (substring .content 0 (cl-position ?\C-j .content))))
+      (t
+       (funcall org-import-simplenote-title-format note)))))
+
 ;; Returning a string to be inserted in the main function would be
 ;; cleaner. However, we have to rely on `org-set-tags' and
 ;; `org-set-property', and it is unnecessarily expensive to create a
@@ -64,25 +99,25 @@ In Emacs < 26, only remove subsecond precision."
   "Convert NOTE into Org text then insert it.
 
 This assumes we're in `org-mode'."
+  (setf (alist-get 'creationDate note)
+        ;; This loses the subsecond portion, but I don't
+        ;; really care.
+        (org-import-simplenote--normalize-timestamp (alist-get 'creationDate note)))
   (let-alist note
-    (let ((date-in-current-timezone
-           ;; This loses the subsecond portion, but I don't
-           ;; really care.
-           (org-import-simplenote--normalize-timestamp .creationDate)))
-      (insert "\n* " date-in-current-timezone)
-      ;; just run this as we're still on the heading
-      (when (> (length .tags) 0)
-        (org-set-tags (cl-coerce .tags 'list)))
-      (org-set-property "created" date-in-current-timezone)
-      ;; Make sure we don't insert before the property drawer
-      (goto-char (point-max))
-      (unless (eq ?\C-j (char-before (point-max)))
-        (insert "\n"))
-      (insert "\n"
-              ;; Simplenote entries seem to be stored with CRLF.
-              ;; Delete the CR characters.
-              (replace-regexp-in-string (regexp-quote "") ""
-                                        .content)))))
+    (insert "\n* " (org-import-simplenote--format-title note))
+    ;; just run this as we're still on the heading
+    (when (> (length .tags) 0)
+      (org-set-tags (cl-coerce .tags 'list)))
+    (org-set-property "created" .creationDate)
+    ;; Make sure we don't insert before the property drawer
+    (goto-char (point-max))
+    (unless (eq ?\C-j (char-before (point-max)))
+      (insert "\n"))
+    (insert "\n"
+            ;; Simplenote entries seem to be stored with CRLF.
+            ;; Delete the CR characters.
+            (replace-regexp-in-string (regexp-quote "") ""
+                                      .content))))
 
 ;;;###autoload
 (defun org-import-simplenote (archive)
