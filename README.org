@@ -5,7 +5,14 @@ Import Simplenote archives into Org.
 1. Go to Simplenote → Settings → Tools → Export Notes
 2. A =notes.zip= should be downloaded
 3. In an Org buffer, run =org-import-simplenote= and select the zip file
+   - This requires =7z= to be installed.
+   - Alternatively, unzip the file yourself then select the =notes/source/notes.json= file
 4. Each Simplenote item will be imported as an Org heading (might be customizable in the future)
+
+** Requirements
+
+- p7zip (=7z=) to unzip the exported archive for you
+- Should work from Emacs 24 onwards, though I've only tested it in Emacs 24 and 25 using the unit tests
 
 ** License
 
