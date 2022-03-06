@@ -22,7 +22,13 @@
 
 ;;; Commentary:
 
-;; commentary
+;; Note on maintaining Emacs 24 compatibility:
+;;
+;; - Why?
+;;   As a challenge, I guess.
+;; - alist-get was added in Emacs 25.
+;;   Use (car (assq ...)) for retrieval, and (setcdr (assq ...)) for
+;;   setting values instead.
 
 ;;; Code:
 
@@ -99,10 +105,10 @@ This assumes NOTE's timestamp is already normalized."
   "Convert NOTE into Org text then insert it.
 
 This assumes we're in `org-mode'."
-  (setf (alist-get 'creationDate note)
-        ;; This loses the subsecond portion, but I don't
-        ;; really care.
-        (org-import-simplenote--normalize-timestamp (alist-get 'creationDate note)))
+  (setcdr (assq 'creationDate note)
+          ;; This loses the subsecond portion, but I don't
+          ;; really care.
+          (org-import-simplenote--normalize-timestamp (cdr (assq 'creationDate note))))
   (let-alist note
     (insert "\n* " (org-import-simplenote--format-title note))
     ;; just run this as we're still on the heading

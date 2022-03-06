@@ -75,9 +75,9 @@ test")))))
                 (content . "test")
                 (creationDate . "2021-10-25T05:30:51.000Z")
                 (lastModified . "2021-10-30T11:18:14.594Z"))))
-    (setf (alist-get 'creationDate note)
-          (org-import-simplenote--normalize-timestamp
-           (alist-get 'creationDate note)))
+    (setcdr (assq 'creationDate note)
+            (org-import-simplenote--normalize-timestamp
+             (cdr (assq 'creationDate note))))
     (let ((org-import-simplenote-title-format 'timestamp))
       (should (equal (org-import-simplenote--normalize-timestamp
                       "2021-10-25T05:30:51+0000")
@@ -93,7 +93,7 @@ test")))))
                      (org-import-simplenote--format-title note))))
     (let ((org-import-simplenote-title-format
            (lambda (note)
-             (alist-get 'id note))))
+             (cdr (assq 'id note)))))
       (should (equal "3332bd3d9ecb42598c99cacc55773fc8"
                      (org-import-simplenote--format-title note))))))
 
