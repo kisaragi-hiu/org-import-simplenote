@@ -1,7 +1,7 @@
 ;;; org-import-simplenote.el --- Import Simplenote notes into Org -*- lexical-binding: t -*-
 
 ;; Author: Kisaragi Hiu
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((emacs "24.3") (let-alist "1.0.6"))
 ;; Homepage: https://github.com/kisaragi-hiu/org-import-simplenote
 

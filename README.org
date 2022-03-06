@@ -14,6 +14,51 @@ Import Simplenote archives into Org.
 - p7zip (=7z=) to unzip the exported archive for you
 - Should work from Emacs 24 onwards, though I've only tested it in Emacs 24 and 25 using the unit tests
 
+** Configuration
+
+- org-import-simplenote-title-format ::
+
+  By default (with this option set to =timestamp=), notes are imported like this:
+
+  #+begin_src org
+  ,* 2021-12-07T23:31:25+0900
+  :PROPERTIES:
+  :created:  2021-12-07T23:31:25+0900
+  :END:
+
+  first line
+
+  text content
+  #+end_src
+
+  To use the first line as the title, set this to =first-line=, which will import notes like this:
+
+  #+begin_src org
+  ,* first line
+  :PROPERTIES:
+  :created:  2021-12-07T23:31:25+0900
+  :END:
+
+  text content
+  #+end_src
+
+  Or use =both=:
+
+  #+begin_src org
+  ,* 2021-12-07T23:31:25+0900 first line
+  :PROPERTIES:
+  :created:  2021-12-07T23:31:25+0900
+  :END:
+
+  text content
+  #+end_src
+
+** Todos
+
+- [ ] Import Simplenote IDs as well (as either the =ID= property or the =CUSTOM_ID= property; the former probably works better)
+- [ ] Import the last modified timestamp
+- [ ] Customize the property name
+
 ** License
 
 GPLv3. See [[./LICENSE][LICENSE]].
