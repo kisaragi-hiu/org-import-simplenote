@@ -1,3 +1,25 @@
+;;; org-import-simplenote-test.el --- Tests -*- lexical-binding: t -*-
+
+;;; Commentary:
+
+;; Tests.
+;;
+;; To get tests involving timestamps with offsets to work reliably,
+;; pass the expected timestamp to
+;; `org-import-simplenote--normalize-timestamp'.
+;; `test--normalized-timestamp' is also available as a macro that
+;; replaces all %s fields in a format string with the normalized
+;; timestamp. This ensures tests work regardless of the system
+;; timezone.
+;;
+;; The timezone normalization does not work on Emacs < 26, however. In
+;; Emacs < 26, tests will only work if the system timezone matches the
+;; offsets specified in the tests; as we run tests for older Emacs in
+;; CI only (on GitHub Actions), which use UTC+0, please just make sure
+;; timestamps in specified tests are formatted to UTC+0.
+
+;;; Code:
+
 (require 'ert)
 (require 'org-import-simplenote)
 
@@ -58,7 +80,7 @@ test")))))
            (alist-get 'creationDate note)))
     (let ((org-import-simplenote-title-format 'timestamp))
       (should (equal (org-import-simplenote--normalize-timestamp
-                      "2021-10-25T14:30:51+0900")
+                      "2021-10-25T05:30:51+0000")
                      (org-import-simplenote--format-title note))))
     (let ((org-import-simplenote-title-format 'first-line))
       (should (equal "test"
@@ -66,7 +88,7 @@ test")))))
     (let ((org-import-simplenote-title-format 'both))
       (should (equal (format "%s %s"
                              (org-import-simplenote--normalize-timestamp
-                              "2021-10-25T14:30:51+0900")
+                              "2021-10-25T05:30:51+0000")
                              "test")
                      (org-import-simplenote--format-title note))))
     (let ((org-import-simplenote-title-format
@@ -77,6 +99,7 @@ test")))))
 
 (provide 'org-import-simplenote-test)
 
+;;; org-import-simplenote-test.el ends here
 ;; Local Variables:
 ;; flycheck-disabled-checkers: (emacs-lisp-checkdoc)
 ;; End:
