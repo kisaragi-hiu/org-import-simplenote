@@ -42,7 +42,6 @@
   :group 'org
   :prefix "org-import-simplenote-")
 
-
 (defcustom org-import-simplenote-title-format 'timestamp
   "What the imported title of each note should be.
 
@@ -80,6 +79,21 @@ In Emacs < 26, only remove subsecond precision."
     (format-time-string "%FT%T%z"
                         (parse-iso8601-time-string timestamp))))
 
+(defun org-import-simplenote--normalize-note (note)
+  "Normalize a parsed NOTE object."
+  (setcdr (assq 'creationDate note)
+          ;; This loses the subsecond portion, but I don't
+          ;; really care.
+          (org-import-simplenote--normalize-timestamp
+           (cdr (assq 'creationDate note))))
+  (setcdr (assq 'content note)
+          ;; Simplenote entries seem to be stored with CRLF.
+          ;; Delete the CR characters.
+          (replace-regexp-in-string
+           (regexp-quote "") ""
+           (cdr (assq 'content note))))
+  note)
+
 (defun org-import-simplenote--format-title (note)
   "Return a formatted title for NOTE.
 
@@ -96,6 +110,27 @@ This assumes NOTE's timestamp is already normalized."
       (t
        (funcall org-import-simplenote-title-format note)))))
 
+(defun org-import-simplenote--format-content (str)
+  "Format STR as content.
+
+This right now just makes sure that when
+`org-import-simplenote-title-format' is `first-line' or `both',
+the first line of the content is used as the title and removed
+from the text content."
+  (if (memq org-import-simplenote-title-format '(first-line both))
+      (with-temp-buffer
+        (insert str)
+        ;; Remove the first line
+        (goto-char (point-min))
+        (when (re-search-forward "^.*\\(?:\n+\\|$\\)" nil t)
+          (replace-match ""))
+        ;; Trim leading whitespace
+        (goto-char (point-min))
+        (when (re-search-forward "^\\(?:[ \t\n\r]+\\)" nil t)
+          (replace-match ""))
+        (buffer-string))
+    str))
+
 ;; Returning a string to be inserted in the main function would be
 ;; cleaner. However, we have to rely on `org-set-tags' and
 ;; `org-set-property', and it is unnecessarily expensive to create a
@@ -105,10 +140,7 @@ This assumes NOTE's timestamp is already normalized."
   "Convert NOTE into Org text then insert it.
 
 This assumes we're in `org-mode'."
-  (setcdr (assq 'creationDate note)
-          ;; This loses the subsecond portion, but I don't
-          ;; really care.
-          (org-import-simplenote--normalize-timestamp (cdr (assq 'creationDate note))))
+  (setq note (org-import-simplenote--normalize-note note))
   (let-alist note
     (insert "\n* " (org-import-simplenote--format-title note))
     ;; just run this as we're still on the heading
@@ -119,11 +151,7 @@ This assumes we're in `org-mode'."
     (goto-char (point-max))
     (unless (eq ?\C-j (char-before (point-max)))
       (insert "\n"))
-    (insert "\n"
-            ;; Simplenote entries seem to be stored with CRLF.
-            ;; Delete the CR characters.
-            (replace-regexp-in-string (regexp-quote "") ""
-                                      .content))))
+    (insert "\n" (org-import-simplenote--format-content .content))))
 
 ;;;###autoload
 (defun org-import-simplenote (archive)

@@ -50,14 +50,61 @@ normalized version of TIMESTAMP."
         (normalized (org-import-simplenote--normalize-timestamp timestamp)))
     `(format ,format ,@(make-list count normalized))))
 
-(ert-deftest org-import-simplenote--insert-note ()
+(ert-deftest org-import-simplenote--insert-note--both ()
   (with-temp-buffer
     (org-mode)
-    (org-import-simplenote--insert-note
-     '((id . "3332bd3d9ecb42598c99cacc55773fc8")
-       (content . "test")
-       (creationDate . "2021-10-25T05:30:51.000Z")
-       (lastModified . "2021-10-30T11:18:14.594Z")))
+    (let ((org-import-simplenote-title-format 'both))
+      (org-import-simplenote--insert-note
+       '((id . "3332bd3d9ecb42598c99cacc55773fc8")
+         (content . "test
+
+content")
+         (creationDate . "2021-10-25T05:30:51.000Z")
+         (lastModified . "2021-10-30T11:18:14.594Z"))))
+    (should (equal (test--remove-leading-spaces
+                    (buffer-substring-no-properties (point-min) (point-max)))
+                   (test--normalized-timestamp
+                    "2021-10-25T05:30:51+0000"
+                    "
+* %s test
+:PROPERTIES:
+:created:  %s
+:END:
+
+content")))))
+
+(ert-deftest org-import-simplenote--insert-note--first-line ()
+  (with-temp-buffer
+    (org-mode)
+    (let ((org-import-simplenote-title-format 'first-line))
+      (org-import-simplenote--insert-note
+       '((id . "3332bd3d9ecb42598c99cacc55773fc8")
+         (content . "test
+
+content")
+         (creationDate . "2021-10-25T05:30:51.000Z")
+         (lastModified . "2021-10-30T11:18:14.594Z"))))
+    (should (equal (test--remove-leading-spaces
+                    (buffer-substring-no-properties (point-min) (point-max)))
+                   (test--normalized-timestamp
+                    "2021-10-25T05:30:51+0000"
+                    "
+* test
+:PROPERTIES:
+:created:  %s
+:END:
+
+content")))))
+
+(ert-deftest org-import-simplenote--insert-note--timestamp ()
+  (with-temp-buffer
+    (org-mode)
+    (let ((org-import-simplenote-title-format 'timestamp))
+      (org-import-simplenote--insert-note
+       '((id . "3332bd3d9ecb42598c99cacc55773fc8")
+         (content . "test")
+         (creationDate . "2021-10-25T05:30:51.000Z")
+         (lastModified . "2021-10-30T11:18:14.594Z"))))
     (should (equal (test--remove-leading-spaces
                     (buffer-substring-no-properties (point-min) (point-max)))
                    (test--normalized-timestamp
