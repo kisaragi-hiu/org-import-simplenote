@@ -7,7 +7,7 @@
     (with-temp-buffer
       (insert str)
       (while (re-search-backward (rx bol (+? " ") ":") nil t)
-        (replace-match ""))
+        (replace-match ":"))
       (buffer-string))))
 
 (defmacro test--normalized-timestamp (timestamp format)
