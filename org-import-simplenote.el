@@ -90,7 +90,7 @@ In Emacs < 26, only remove subsecond precision."
           ;; Simplenote entries seem to be stored with CRLF.
           ;; Delete the CR characters.
           (replace-regexp-in-string
-           (regexp-quote "") ""
+           (regexp-quote "\C-m") ""
            (cdr (assq 'content note))))
   note)
 

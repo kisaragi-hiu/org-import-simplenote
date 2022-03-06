@@ -56,9 +56,9 @@ normalized version of TIMESTAMP."
     (let ((org-import-simplenote-title-format 'both))
       (org-import-simplenote--insert-note
        '((id . "3332bd3d9ecb42598c99cacc55773fc8")
-         (content . "test
-
-content")
+         (content . "test\C-m
+\C-m
+content\C-m")
          (creationDate . "2021-10-25T05:30:51.000Z")
          (lastModified . "2021-10-30T11:18:14.594Z"))))
     (should (equal (test--remove-leading-spaces
@@ -79,9 +79,9 @@ content")))))
     (let ((org-import-simplenote-title-format 'first-line))
       (org-import-simplenote--insert-note
        '((id . "3332bd3d9ecb42598c99cacc55773fc8")
-         (content . "test
-
-content")
+         (content . "test\C-m
+\C-m
+content\C-m")
          (creationDate . "2021-10-25T05:30:51.000Z")
          (lastModified . "2021-10-30T11:18:14.594Z"))))
     (should (equal (test--remove-leading-spaces
