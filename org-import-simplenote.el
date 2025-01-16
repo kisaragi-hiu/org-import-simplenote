@@ -56,6 +56,16 @@
                  (const both)
                  (function)))
 
+(defcustom org-import-simplenote-sort t
+  "Whether to sort entries after importing.
+
+If nil, do not sort. Otherwise, sort top-level entries in the buffer
+after importing alphanumerically."
+  :group 'org-import-simplenote
+  :type '(choice
+          (const :tag "Don't sort" nil)
+          (const :tag "Sort alphanumerically" t)))
+
 (defun org-import-simplenote--normalize-timestamp (timestamp)
   "Normalize TIMESTAMP to the current timezone and remove subsecond precision.
 
@@ -206,7 +216,10 @@ the end the current buffer."
         (goto-char (point-max))
         (cl-loop for note being the elements of .activeNotes
                  do (org-import-simplenote--insert-note note))
-        (insert "\n")))))
+        (insert "\n")))
+    (when org-import-simplenote-sort
+      (goto-char (point-min))
+      (org-sort-entries nil ?A))))
 
 (provide 'org-import-simplenote)
 
