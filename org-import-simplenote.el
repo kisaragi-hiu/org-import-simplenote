@@ -80,18 +80,33 @@ In Emacs < 26, only remove subsecond precision."
                         (parse-iso8601-time-string timestamp))))
 
 (defun org-import-simplenote--normalize-note (note)
-  "Normalize a parsed NOTE object."
+  "Normalize a parsed NOTE object.
+
+Specifically:
+
+- Normalize the creation timestamp (see
+  `org-import-simplenote--normalize-timestamp')
+- Use LF as line end instead of CRLF
+- Increase the level of Org headings within the note so that there is no
+  top level headings (such that the note content don\\='t escape out of
+  the heading)."
   (setcdr (assq 'creationDate note)
           ;; This loses the subsecond portion, but I don't
           ;; really care.
           (org-import-simplenote--normalize-timestamp
            (cdr (assq 'creationDate note))))
   (setcdr (assq 'content note)
-          ;; Simplenote entries seem to be stored with CRLF.
-          ;; Delete the CR characters.
-          (replace-regexp-in-string
-           (regexp-quote "\C-m") ""
-           (cdr (assq 'content note))))
+          (let* ((it (cdr (assq 'content note)))
+                 ;; Simplenote entries seem to be stored with CRLF.
+                 ;; Delete the CR characters.
+                 (it (replace-regexp-in-string
+                      (regexp-quote "\C-m") ""
+                      it))
+                 ;; Increase the level of Org-style headings by 1.
+                 (it (replace-regexp-in-string
+                      "^\\(\\*+\\) " "*\\1 "
+                      it)))
+            it))
   note)
 
 (defun org-import-simplenote--format-title (note)
