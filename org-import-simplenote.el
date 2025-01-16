@@ -34,6 +34,7 @@
 
 (require 'parse-time)
 (require 'let-alist)
+(require 'json)
 
 (require 'org)
 
