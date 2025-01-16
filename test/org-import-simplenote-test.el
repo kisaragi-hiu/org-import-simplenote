@@ -118,7 +118,10 @@ content")))))
 test")))))
 
 (ert-deftest org-import-simplenote--format-title ()
-  (let ((note '((id . "3332bd3d9ecb42598c99cacc55773fc8")
+  ;; The quasiquoting is to make the value NOT a constant list.
+  ;; Since the Elisp linter *is* the byte compiler, as long as the byte compiler
+  ;; doesn't complain this should actually resolve the problem.
+  (let ((note `((id . ,"3332bd3d9ecb42598c99cacc55773fc8")
                 (content . "test")
                 (creationDate . "2021-10-25T05:30:51.000Z")
                 (lastModified . "2021-10-30T11:18:14.594Z"))))
